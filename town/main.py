@@ -60,7 +60,7 @@ class Horse(pygame.sprite.Sprite):
             self.rect.move_ip(*e)
             for g in self.groups():
                 if isinstance(g, Collision_Group):
-                    if len(pygame.sprite.spritecollide(self, g, False, collided=pygame.sprite.collide_mask)) > 1:
+                    if len(pygame.sprite.spritecollide(self, g, False)) > 1:
                         if i == 0:
                             self.rect.x = x
                         else:
