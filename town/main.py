@@ -26,6 +26,11 @@ class Horse(pygame.sprite.Sprite):
         self.image = None
         self.updateImage()
         self.rect = pygame.Rect(x,y,self.scale,self.scale)
+        self.hitbox = self.rect.copy()
+        rw = self.rect.width
+        rh = self.rect.height
+        self.hitbox = self.rect.inflate(0.5 * rw - rw, 0.5 * rh - rh)
+        self.hitbox.y = y + rh - self.hitbox.height
         self.speed = 10
 
     def updateImage(self):
@@ -51,34 +56,49 @@ class Horse(pygame.sprite.Sprite):
             self.iframe = (self.iframe + 1) % self.icols
             self.updateImage()
 
+        x = self.rect.x
+        y = self.rect.y
+
         d = list(map(lambda x:x*self.speed, d))
-        x, y = self.rect.x, self.rect.y
+        rw = self.rect.width
+        rh = self.rect.height
         
         for i in range(2):
             e = [0 , 0]
             e[i] = d[i]
             self.rect.move_ip(*e)
+            self.hitbox = self.rect.inflate(1 * rw - rw, 1 * rh - rh)
+            self.hitbox.y = y + rh - self.hitbox.height
             for g in self.groups():
                 if isinstance(g, Collision_Group):
-                    if len(pygame.sprite.spritecollide(self, g, False)) > 1:
+                    if len(pygame.sprite.spritecollide(self, g, False, collided=(lambda x, y : pygame.Rect.colliderect(x.hitbox, y.hitbox)))) > 1:
                         if i == 0:
                             self.rect.x = x
+                            self.hitbox = self.rect.inflate(1 * rw - rw, 1 * rh - rh)
+                            self.hitbox.y = y + rh - self.hitbox.height
                         else:
                             self.rect.y = y
+                            self.hitbox = self.rect.inflate(1 * rw - rw, 1 * rh - rh)
+                            self.hitbox.y = y + rh - self.hitbox.height
                         break
 
 class Box(pygame.sprite.Sprite):
-    def __init__(self, x, y, w, h=-1, color=()):
+    def __init__(self, x, y, w, h, color=()):
         pygame.sprite.Sprite.__init__(self)
-        if isinstance(w, str):
-            self.image = pygame.image.load(w).convert()
+        if isinstance(color, str):
+            self.image = pygame.image.load(color).convert()
             self.rect = self.image.get_rect()
             self.rect.x = x
             self.rect.y = y
+            rw = self.rect.width
+            rh = self.rect.height
+            self.hitbox = self.rect.inflate(w * rw - rw, h * rh - rh)
+            self.hitbox.y = y + rh - self.hitbox.height
         else:
             self.image = pygame.Surface((w, h))
             self.image.fill(color)
             self.rect = pygame.Rect(x,y,w, h)
+            self.hitbox = self.rect.copy()
 
 class Collision_Group(pygame.sprite.Group):
     def __init__(self):
@@ -90,16 +110,21 @@ wl = Box(0, 0, 1, height, (0,0,0))
 wr = Box(width, 0, 1, height, (0,0,0))
 
 horse = Horse(800,400)
-house = Box(200, -48, "house.gif")
-tree1 = Box(800, 600, "tree.gif")
-tree2 = Box(1256, 100, "tree.gif")
-well = Box(32, 350, "well.gif")
+house = Box(200, -48, 1, 0.5, "house.gif")
+tree1 = Box(800, 600, 0.2, 0.2, "tree.gif")
+tree2 = Box(1256, 100, 0.2, 0.2, "tree.gif")
+well = Box(32, 350, 1, 0.5, "well.gif")
 
 draw = pygame.sprite.LayeredUpdates() 
 collide = Collision_Group()
 
 draw.add(horse, house, tree1, tree2, well)
 collide.add(wb, wt, wr, wl, horse, house, tree1, tree2, well)
+
+for s in collide:
+    if s.hitbox is not None:
+        draw.add(Box(s.hitbox.x, s.hitbox.y, s.hitbox.width, s.hitbox.height, (255, 0,0)))
+
 
 def run():
     while True:
