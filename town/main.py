@@ -59,27 +59,27 @@ class Horse(pygame.sprite.Sprite):
         x = self.rect.x
         y = self.rect.y
 
+        hx = self.hitbox.x
+        hy = self.hitbox.y
+
         d = list(map(lambda x:x*self.speed, d))
-        rw = self.rect.width
-        rh = self.rect.height
         
         for i in range(2):
             e = [0 , 0]
             e[i] = d[i]
             self.rect.move_ip(*e)
-            self.hitbox = self.rect.inflate(1 * rw - rw, 1 * rh - rh)
-            self.hitbox.y = y + rh - self.hitbox.height
+            self.hitbox.move_ip(*e)
             for g in self.groups():
                 if isinstance(g, Collision_Group):
                     if len(pygame.sprite.spritecollide(self, g, False, collided=(lambda x, y : pygame.Rect.colliderect(x.hitbox, y.hitbox)))) > 1:
                         if i == 0:
+                            print("x col")
                             self.rect.x = x
-                            self.hitbox = self.rect.inflate(1 * rw - rw, 1 * rh - rh)
-                            self.hitbox.y = y + rh - self.hitbox.height
+                            self.hitbox.x = hx
                         else:
+                            print("y col")
                             self.rect.y = y
-                            self.hitbox = self.rect.inflate(1 * rw - rw, 1 * rh - rh)
-                            self.hitbox.y = y + rh - self.hitbox.height
+                            self.hitbox.y = hy
                         break
 
 class Box(pygame.sprite.Sprite):
@@ -121,9 +121,6 @@ collide = Collision_Group()
 draw.add(horse, house, tree1, tree2, well)
 collide.add(wb, wt, wr, wl, horse, house, tree1, tree2, well)
 
-for s in collide:
-    if s.hitbox is not None:
-        draw.add(Box(s.hitbox.x, s.hitbox.y, s.hitbox.width, s.hitbox.height, (255, 0,0)))
 
 
 def run():
@@ -150,6 +147,10 @@ def run():
             horse.move(d)
 
         draw.draw(screen)
+        for s in collide:
+            if s.hitbox is not None:
+                b = Box(s.hitbox.x, s.hitbox.y, s.hitbox.width, s.hitbox.height, (255, 0,0))
+                screen.blit(b.image, b.rect)
 
         pygame.display.flip()
 
