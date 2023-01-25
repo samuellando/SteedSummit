@@ -121,6 +121,7 @@ collide = Collision_Group()
 draw.add(horse, house, tree1, tree2, well)
 collide.add(wb, wt, wr, wl, horse, house, tree1, tree2, well)
 
+print(draw.layers())
 
 
 def run():
