@@ -73,11 +73,9 @@ class Horse(pygame.sprite.Sprite):
                 if isinstance(g, Collision_Group):
                     if len(pygame.sprite.spritecollide(self, g, False, collided=(lambda x, y : pygame.Rect.colliderect(x.hitbox, y.hitbox)))) > 1:
                         if i == 0:
-                            print("x col")
                             self.rect.x = x
                             self.hitbox.x = hx
                         else:
-                            print("y col")
                             self.rect.y = y
                             self.hitbox.y = hy
                         break
@@ -104,6 +102,17 @@ class Collision_Group(pygame.sprite.Group):
     def __init__(self):
         pygame.sprite.Group.__init__(self)
 
+class Draw_Group(pygame.sprite.Group):
+    def __init__(self):
+        pygame.sprite.Group.__init__(self)
+
+    def draw(self, surface):
+        sprites = self.sprites()
+        surface_blit = surface.blit
+        for spr in sorted(sprites, key=lambda x : x.rect.y + x.rect.height):
+            self.spritedict[spr] = surface_blit(spr.image, spr.rect)
+        self.lostsprites = []
+
 wb = Box(0, height-64, width, 1, (0,0,0))
 wt = Box(0, 0, width, 1, (0,0,0))
 wl = Box(0, 0, 1, height, (0,0,0))
@@ -115,14 +124,11 @@ tree1 = Box(800, 600, 0.2, 0.2, "tree.gif")
 tree2 = Box(1256, 100, 0.2, 0.2, "tree.gif")
 well = Box(32, 350, 1, 0.5, "well.gif")
 
-draw = pygame.sprite.LayeredUpdates() 
+draw = Draw_Group()
 collide = Collision_Group()
 
 draw.add(horse, house, tree1, tree2, well)
 collide.add(wb, wt, wr, wl, horse, house, tree1, tree2, well)
-
-print(draw.layers())
-
 
 def run():
     while True:
@@ -148,10 +154,11 @@ def run():
             horse.move(d)
 
         draw.draw(screen)
-        for s in collide:
-            if s.hitbox is not None:
-                b = Box(s.hitbox.x, s.hitbox.y, s.hitbox.width, s.hitbox.height, (255, 0,0))
-                screen.blit(b.image, b.rect)
+        if False:
+            for s in collide:
+                if s.hitbox is not None:
+                    b = Box(s.hitbox.x, s.hitbox.y, s.hitbox.width, s.hitbox.height, (255, 0,0))
+                    screen.blit(b.image, b.rect)
 
         pygame.display.flip()
 
