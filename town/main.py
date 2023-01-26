@@ -1,134 +1,33 @@
 import sys, pygame
-import spritesheet
+from character import TopDownHorse as Horse
+from objects import Box 
+from groups import CollisionGroup, DrawGroup
+
 pygame.init()
 
 size = width, height = 1680, 1000
-black = 0, 0, 0
-clock = pygame.time.Clock()
-pygame.key.set_repeat(1)
-
 screen = pygame.display.set_mode(size)
+bg = pygame.image.load("areaHome/bg.png").convert()
 
-bg = pygame.image.load("bg.png").convert()
-
-class Horse(pygame.sprite.Sprite):
-    ss = spritesheet.spritesheet("horse-brown.gif")
-    irows = [0,1,3,2]
-    icols = 3
-    scale = 128
-
-    def __init__(self, x, y):
-        pygame.sprite.Sprite.__init__(self)
-        self.dir = 1
-        self.iframe = 0
-        self.frame = 0
-        self.anFrame = 5
-        self.image = None
-        self.updateImage()
-        self.rect = pygame.Rect(x,y,self.scale,self.scale)
-        self.hitbox = self.rect.copy()
-        rw = self.rect.width
-        rh = self.rect.height
-        self.hitbox = self.rect.inflate(0.5 * rw - rw, 0.5 * rh - rh)
-        self.hitbox.y = y + rh - self.hitbox.height
-        self.speed = 10
-
-    def updateImage(self):
-        self.image = self.ss.image_at((
-            self.scale * self.iframe, 
-            self.scale * self.irows[self.dir],
-            self.scale, self.scale
-            ))
-
-    def move(self, d):
-
-        if d[0] == 1:
-            self.dir = 1
-        elif d[0] == -1:
-            self.dir = 2
-        elif d[1] == 1:
-            self.dir = 3
-        elif d[1] == -1:
-            self.dir = 0
-
-        self.frame = (self.frame + 1) % self.anFrame
-        if self.frame == 0:
-            self.iframe = (self.iframe + 1) % self.icols
-            self.updateImage()
-
-        x = self.rect.x
-        y = self.rect.y
-
-        hx = self.hitbox.x
-        hy = self.hitbox.y
-
-        d = list(map(lambda x:x*self.speed, d))
-        
-        for i in range(2):
-            e = [0 , 0]
-            e[i] = d[i]
-            self.rect.move_ip(*e)
-            self.hitbox.move_ip(*e)
-            for g in self.groups():
-                if isinstance(g, Collision_Group):
-                    if len(pygame.sprite.spritecollide(self, g, False, collided=(lambda x, y : pygame.Rect.colliderect(x.hitbox, y.hitbox)))) > 1:
-                        if i == 0:
-                            self.rect.x = x
-                            self.hitbox.x = hx
-                        else:
-                            self.rect.y = y
-                            self.hitbox.y = hy
-                        break
-
-class Box(pygame.sprite.Sprite):
-    def __init__(self, x, y, w, h, color=()):
-        pygame.sprite.Sprite.__init__(self)
-        if isinstance(color, str):
-            self.image = pygame.image.load(color).convert()
-            self.rect = self.image.get_rect()
-            self.rect.x = x
-            self.rect.y = y
-            rw = self.rect.width
-            rh = self.rect.height
-            self.hitbox = self.rect.inflate(w * rw - rw, h * rh - rh)
-            self.hitbox.y = y + rh - self.hitbox.height
-        else:
-            self.image = pygame.Surface((w, h))
-            self.image.fill(color)
-            self.rect = pygame.Rect(x,y,w, h)
-            self.hitbox = self.rect.copy()
-
-class Collision_Group(pygame.sprite.Group):
-    def __init__(self):
-        pygame.sprite.Group.__init__(self)
-
-class Draw_Group(pygame.sprite.Group):
-    def __init__(self):
-        pygame.sprite.Group.__init__(self)
-
-    def draw(self, surface):
-        sprites = self.sprites()
-        surface_blit = surface.blit
-        for spr in sorted(sprites, key=lambda x : x.rect.y + x.rect.height):
-            self.spritedict[spr] = surface_blit(spr.image, spr.rect)
-        self.lostsprites = []
-
-wb = Box(0, height-64, width, 1, (0,0,0))
+wb = Box(0, height, width, 1, (0,0,0))
 wt = Box(0, 0, width, 1, (0,0,0))
 wl = Box(0, 0, 1, height, (0,0,0))
 wr = Box(width, 0, 1, height, (0,0,0))
 
 horse = Horse(800,400)
-house = Box(200, -48, 1, 0.5, "house.gif")
-tree1 = Box(800, 600, 0.2, 0.2, "tree.gif")
-tree2 = Box(1256, 100, 0.2, 0.2, "tree.gif")
-well = Box(32, 350, 1, 0.5, "well.gif")
+house = Box(200, -48, 1, 0.5, "areaHome/house.gif")
+tree1 = Box(800, 600, 0.2, 0.2, "areaHome/tree.gif")
+tree2 = Box(1256, 100, 0.2, 0.2, "areaHome/tree.gif")
+well = Box(32, 350, 1, 0.5, "areaHome/well.gif")
 
-draw = Draw_Group()
-collide = Collision_Group()
+draw = DrawGroup()
+collide = CollisionGroup()
 
 draw.add(horse, house, tree1, tree2, well)
 collide.add(wb, wt, wr, wl, horse, house, tree1, tree2, well)
+
+clock = pygame.time.Clock()
+pygame.key.set_repeat(1)
 
 def run():
     while True:
