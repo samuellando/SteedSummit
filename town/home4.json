@@ -1,0 +1,14 @@
+{
+    "directory": "areaHome4",
+    "background": "bg.png",
+    "boundaries": [
+        {"start": {"x": 0, "y": 0}, "end": {"x": 1680, "y": 0}},
+        {"start": {"x": 1680, "y": 0}, "end": {"x": 1680, "y": 1000}}
+    ],
+    "adj": {
+        "bottom": "home3.json",
+        "left": "home2.json"
+    },
+    "objects": [
+    ]
+}

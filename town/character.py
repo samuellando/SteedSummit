@@ -31,8 +31,20 @@ class TopDownHorse(pygame.sprite.Sprite):
             self.scale, self.scale
             ))
 
-    def move(self, d):
+    def setPosition(self, x=None, y=None):
+        if x != None:
+            self.rect.x = x
+            self.hitbox.x = x
+            self.hitbox.x += self.rect.width // 2
+            self.hitbox.x -= self.hitbox.width // 2
 
+        if y != None:
+            self.rect.y = y
+            self.hitbox.y = y
+            self.hitbox.y += self.rect.height
+            self.hitbox.y -= self.hitbox.height
+
+    def move(self, d):
         if d[0] == 1:
             self.dir = 1
         elif d[0] == -1:
@@ -50,9 +62,6 @@ class TopDownHorse(pygame.sprite.Sprite):
         x = self.rect.x
         y = self.rect.y
 
-        hx = self.hitbox.x
-        hy = self.hitbox.y
-
         d = list(map(lambda x:x*self.speed, d))
         
         for i in range(2):
@@ -64,9 +73,7 @@ class TopDownHorse(pygame.sprite.Sprite):
                 if isinstance(g, CollisionGroup):
                     if len(pygame.sprite.spritecollide(self, g, False, collided=(lambda x, y : pygame.Rect.colliderect(x.hitbox, y.hitbox)))) > 1:
                         if i == 0:
-                            self.rect.x = x
-                            self.hitbox.x = hx
+                            self.setPosition(x=x)
                         else:
-                            self.rect.y = y
-                            self.hitbox.y = hy
+                            self.setPosition(y=y)
                         break
