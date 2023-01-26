@@ -1,7 +1,7 @@
 import pygame
 
 class Box(pygame.sprite.Sprite):
-    def __init__(self, x, y, w, h, color=()):
+    def __init__(self, x, y, w, h, color=(0,0,0,0)):
         pygame.sprite.Sprite.__init__(self)
         if isinstance(color, str):
             self.image = pygame.image.load(color).convert()
@@ -10,7 +10,7 @@ class Box(pygame.sprite.Sprite):
             self.rect.y = y
             rw = self.rect.width
             rh = self.rect.height
-            self.hitbox = self.rect.inflate(w * rw - rw, h * rh - rh)
+            self.hitbox = self.rect.inflate(w - rw, h - rh)
             self.hitbox.y = y + rh - self.hitbox.height
         else:
             self.image = pygame.Surface((w, h))
